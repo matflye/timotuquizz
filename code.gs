@@ -1,15 +1,77 @@
-function HelloWorld() {
-  
-  Logger.log("hello !");
+// Pour tester les sessions et ajouter les liens pre et post formation des quiz , il faut lancer la fonction associeadflienquiz()
+
+// Pour récupérer les resultats d'un quiz , lancer recupresultsquiz()
+
+
+
+function ArrayAvg(myArray) {
+    var i = 0, summ = 0, ArrayLen = myArray.length;
+    while (i < ArrayLen) {
+        summ = summ + myArray[i++];
+    }
+    return summ / ArrayLen;
+}
+
+
+// fonction pour récupérer l'id du quiz à partir du lien
+function extractQuizId(){
+
+  const quiz_Lien = "https://docs.google.com/forms/d/e/1FAIpQLSfT-7PiWOOiVBVC4y1ZHcp61QnUQnvX38gcJ5aU0ocx_K3LNw/viewform"
 
 }
+
+function recupresultsquiz(){
+
+  const quiz_id = "1lGgN1UHrU3rUJgekfnz3LKtnY9MgfLeiuNttBd3nq3Y";
+
+  var form = FormApp.openById(quiz_id);
+  //var formResponses = form.getResponses();
+   
+  var formResponses = form.getResponses();
+  var formItems = form.getItems();
+
+  Logger.log('nb reponses: '+ formResponses.length); //
+
+  // stocker les resultats de chaque quiz
+  var scoretot = new Array();
+
+  for (var i = 0; i < formResponses.length; i++) {
+    var formResponse = formResponses[i];
+    
+    scoretot[i] = 0 ;
+
+    for (var j = 0; j < formItems.length; j++) {
+      var item = formItems[j];
+
+      var points = item.asMultipleChoiceItem().getPoints();
+      var itemResponse = formResponse.getGradableResponseForItem(item);
+      var gradableResponseForItem = formResponse.getGradableResponseForItem(item);
+      var score = gradableResponseForItem.getScore();
+      
+       scoretot[i] =  scoretot[i] + score ;
+      
+
+        
+     Logger.log('points: '+ points +' pour i=' + i +' et j=' + j + 'itemresponse = ' + itemResponse.getResponse()+ ' score=' + score + ' scoretot=' + scoretot[i]); //
+    }
+
+  }
+
+  var moyQuiz = ArrayAvg(scoretot);
+
+  Logger.log('moyenne des resultats du quiz: '+ moyQuiz );
+
+}
+
+
 
 function listadf(){
     // include the API Key
     const API_KEY = 'Token token="70GlKkHdVCi53WqONn97"';
      
     // set the endpoint
-    const url = "https://pro.dendreo.com/timotu/api/actions_de_formation.php?ended_after=2022-11-31&ended_before=2022-12-08&id_centre_de_formation=4"; 
+    const url = "https://pro.dendreo.com/timotu/api/actions_de_formation.php?id_centre_de_formation=5"; 
+    //const url = "https://pro.dendreo.com/timotu/api/actions_de_formation.php?ended_after=2022-11-15&ended_before=2022-12-08&id_centre_de_formation=5";
 //    const url = "https://pro.dendreo.com/timotu/api/actions_de_formation.php?ended_after=2022-11-31&ended_before=2022-12-08";
 //    const url = "https://pro.dendreo.com/timotu/api/actions_de_formation.php?id=97";
      
@@ -147,20 +209,17 @@ function associeadflienquiz(){
                 + ' - modele quizz: ' + resultModules[i].c_nom_modele_quizz 
                 + ' - adf programmees : ' );*/
             for ( k = 0; k < adfProgCount; k++) {
-              /*Logger.log( ' - p : ' + resultModules[i].actions_de_formation_programmees[j].id_action_de_formation
-              + ' - intitule: ' + resultModules[i].actions_de_formation_programmees[j].intitule
-              + ' - date debut : ' + resultModules[i].actions_de_formation_programmees[j].date_debut);*/
+              
               if (resultModules[j].actions_de_formation_programmees[k].id_action_de_formation == resultadf[i].id_action_de_formation){
-                
-                var idModuleLien = resultModules[j].id_module;
-                var idModeleQuiz = resultModules[j].c_nom_modele_quizz;
+                                                
                 Logger.log( 'intitule du module de la formation : ' + resultModules[j].intitule 
                     + ' - numero complet module : ' + resultModules[j].numero_complet
                     + ' - id module : ' + resultModules[j].id_module
-                    + ' - modeleQuizAcreer: ' + idModeleQuiz);
+                    + ' - modeleQuizAcreer: ' + resultModules[j].c_nom_modele_quizz);
 
                 // lancer la création des quizz et des liens correspondant
-                // resultcrea = copiequizz(nbModeleQuiz,);
+                resultcrea = copiequizz(resultModules[j].c_nom_modele_quizz,resultadf[i].numero_complet,resultadf[i].id_action_de_formation);
+
               }
             }
             
@@ -173,21 +232,76 @@ function associeadflienquiz(){
 
 }
 
-function copiequizz(AidModeleQuiz, Aadf_complet, folder){
+function copiequizz(idModeleQuiz, adf_complet, adf_id){
 
-    const idModeleQuiz = "1OtTzBFQfSjS7zmYwpZpg_6U4lNzc9cCv6Z4c5_eZFZI" ;
-    const adf_complet = "ADF_20220566" ;
-     
-    var file = DriveApp.getFileById(idModeleQuiz);
-    //var rep = "1awcXlZ0d5kyZAcGLPeJ-83A9wMee2Ad1";
-    var folder = DriveApp.getFolderById("1awcXlZ0d5kyZAcGLPeJ-83A9wMee2Ad1");
-    var newfile=file.makeCopy('quizz-'+ adf_complet,folder);// here you can define the copy name the way you want...
-    //newfile.addToFolder(folder);//  add the copy to the folder
-    //newfile.removeFromFolder(DocsList.getRootFolder());// and remove it from your root folder
+    //const idModeleQuiz = "1OtTzBFQfSjS7zmYwpZpg_6U4lNzc9cCv6Z4c5_eZFZI" ;
+    //const adf_complet = "ADF_20220566" ;
 
+    
+    var filePre = DriveApp.getFileById(idModeleQuiz);
+    var filePost = DriveApp.getFileById(idModeleQuiz);
+    
+    var folderDest = DriveApp.getFolderById("1awcXlZ0d5kyZAcGLPeJ-83A9wMee2Ad1");
+    
+    // création des deux fichiers form dans le repertoire Quiz
+    var newfilePre = filePre.makeCopy('quizz-pre-'+ adf_complet,folderDest);
+    var idFilePre = newfilePre.getId();
+    var lienFilePre =  FormApp.openById(idFilePre).getPublishedUrl();
+    
+
+    var newfilePost=filePost.makeCopy('quizz-post-'+ adf_complet,folderDest);
+    var idFilePost = newfilePost.getId();
+    var lienFilePost =  FormApp.openById(idFilePost).getPublishedUrl();
+    
+    // ajout des 2 liens avec l'api dans la fiche de l'adf
+    var resAjoutLienPost = ajoutLienQuizAdf(lienFilePre,lienFilePost,adf_id);
 
 }
 
+function ajoutLienQuizAdf (lienFilePre,lienFilePost,adf_id){
+  //function ajoutLienQuizAdf (){
+
+    //const lienFilePre = "https://docs.google.com/forms/d/e/1FAIpQLSfTGLhhMfEBcQZp5Ir_LhwOruXgd25zlNMZluhMVdYpGYTotw/viewform";
+    //const adf_id = "2162";
+
+    Logger.log( 'publication pour adf  : ' + adf_id
+                    + ' - du lien pre : ' + lienFilePre);
+
+    // include the API Key
+    const API_KEY = 'Token token="70GlKkHdVCi53WqONn97"';
+     
+    // set the endpoint
+    var urlBase = "https://pro.dendreo.com/timotu/api/actions_de_formation.php"; 
+   
+     
+    // set the params object
+    const params = {
+      'method' : 'put',
+        headers: {
+          Authorization: API_KEY
+        }
+      }
+
+   // il faut fournir l'id de l'adf et non l'adf_complet pour modifier le champ de l'adf
+   // https://pro.dendreo.com/timotu/api/actions_de_formation.php?id_action_de_formation=54
+
+     var urlCommande = '?id_action_de_formation=' + adf_id + '&c_lien_pre_quizz=' + lienFilePre ;
+     var urltot = urlBase + urlCommande ;
+    
+    Logger.log(' - url : ' + urltot );
+
+    // call the API
+    const response = UrlFetchApp.fetch(urltot,params);
+
+    var urlCommande = '?id_action_de_formation=' + adf_id + '&c_lien_post_quizz=' + lienFilePost ;
+     var urltot = urlBase + urlCommande ;
+    
+    Logger.log(' - url : ' + urltot );
+
+    // call the API
+    const response2 = UrlFetchApp.fetch(urltot,params);
+
+}
 
 function recupSessionDendreo() {
 
