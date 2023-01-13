@@ -1,6 +1,6 @@
 // Pour tester les sessions et ajouter les liens pre et post formation des quiz , il faut lancer la fonction associeadflienquiz()
 
-// Pour récupérer les resultats d'un quiz , lancer recupresultsquiz()
+// Pour récupérer les resultats d'un quiz ,, lancer recupresultsquiz()
 
 function ArrayAvg(myArray) {
   var i = 0,
